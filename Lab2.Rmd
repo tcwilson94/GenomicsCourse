@@ -1,0 +1,56 @@
+---
+title: "lab2"
+author: "Thomas Wilson"
+date: "8/24/2020"
+output: html_document
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+
+```{r cars}
+summary(cars)
+```
+
+### Exercise 1
+```{r ex1}
+x <- 3
+y <- 15
+x+y
+y-x
+x*y
+y/x
+```
+### Exercise 2
+```{r ex2}
+x <- 2
+y <- 3
+x^5 > y^4
+
+
+```
+### Exercise 3
+```{r ex3}
+x<-c(22,62,148,43,129)
+sum(x)
+x/sum(x)
+
+```
+### Exercise 4
+
+```{r ex4}
+nuc <- c('A','T','C','G')
+sort(nuc)
+
+
+```
+
+Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
+
+# REFERENCES
