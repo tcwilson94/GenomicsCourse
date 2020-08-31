@@ -3,7 +3,6 @@ title: "Evolutionary Genomics & Bioinformatics"
 author: "Thomas Wilson"
 date: "08/31/2020"
 output: html_document
-bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -13,6 +12,3 @@ knitr::opts_chunk$set(echo = TRUE)
 [Lab1](lab1_ThomasWilson.html)
 [Lab2](Lab2.Rmd)
 
-Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
-
-# REFERENCES
