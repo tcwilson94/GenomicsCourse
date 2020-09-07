@@ -1,0 +1,97 @@
+---
+title: "Lab3"
+author: "Thomas Wilson"
+date: "9/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+download.file(url = "https://ndownloader.figshare.com/files/2292169",
+              destfile = "data/portal_data_joined.csv")
+```
+
+```{r}
+surveys <- read.csv("data/portal_data_joined.csv")
+```
+
+```{r}
+head(surveys)
+```
+```{r}
+str(surveys)
+```
+```{r}
+surveys_200 <- surveys[200, ]
+n_rows <- nrow(surveys)
+surveys_middle <- surveys[n_rows / 2, ]
+surveys_head <- surveys[-(7:n_rows), ]
+```
+
+```{r}
+sex <- factor(c("male", "female", "female", "male"))
+levels(sex)
+nlevels(sex)
+```
+```{r}
+sex <- factor(sex, levels = c("male", "female"))
+levels(sex)
+```
+```{r}
+year_fct <- factor(c(1990, 1983, 1977, 1998, 1990))
+as.numeric(levels(year_fct))[year_fct]
+```
+```{r}
+plot(as.factor(surveys$sex))
+```
+```{r}
+sex <- factor(surveys$sex)
+head(sex)
+levels(sex)
+levels(sex)[1] <- "undetermined"
+levels(sex)
+head(sex)
+levels(sex)[2] <- "female"
+levels(sex)[3] <- "male"
+levels(sex)
+sex <- factor(sex, levels = c("female", "male", "undetermine"))
+plot(sex)
+```
+```{r}
+surveys <- read.csv("data/portal_data_joined.csv", stringsAsFactors = FALSE)
+str(surveys)
+surveys$plot_type <- factor(surveys$plot_type)
+animal_data <- data.frame(
+          animal = c("dog", "cat", "sea cucumber", "sea urchin"),
+          feel = c("furry", "fluffy", "squishy", "spiny"),
+          weight = c(45, 8, 1.1, 0.8)
+          )
+str(animal_data)
+```
+```{r}
+str(surveys)
+```
+```{r}
+library("lubridate")
+```
+```{r}
+my_date <- ymd("2020-09-07")
+str(my_date)
+```
+```{r}
+paste(surveys$year, surveys$month, surveys$day, sep = "-")
+ymd(paste(surveys$year, surveys$month, surveys$day, sep = "-"))
+surveys$date <- ymd(paste(surveys$year, surveys$month, surveys$day, sep = "-"))
+```
+```{r}
+str(surveys)
+summary(surveys$date)
+```
+```{r}
+missing_dates <- surveys[is.na(surveys$date), c("year", "month", "day")]
+head(missing)
+```
+
