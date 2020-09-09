@@ -1,0 +1,175 @@
+---
+title: "Lab3B"
+author: "Thomas Wilson"
+date: "9/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(tidyverse)
+```
+
+```{r}
+surveys <- read.csv("data/portal_data_joined.csv")
+str(surveys)
+```
+
+```{r, results = "hide"}
+select(surveys, plot_id, species_id, weight)
+select(surveys, -record_id, -species_id)
+filter(surveys, year == 1995)
+```
+```{r, results = "hide"}
+surveys2 <- filter(surveys, weight < 5)
+surveys_sml <- select(surveys2, species_id, sex, weight)
+surveys_sml <- select(filter(surveys, weight < 5), species_id, sex, weight)
+str(surveys_sml)
+surveys %>%
+  filter(weight < 5) %>%
+  select(species_id, sex, weight)
+surveys_sml <- surveys %>%
+  filter(weight < 5) %>%
+  select(species_id, sex, weight)
+str(surveys_sml)
+```
+```{r, results = "hide"}
+surveys %>%
+  filter(year < 1995) %>%
+  select(year, sex, weight) %>%
+  head()
+
+```
+```{r}
+surveys %>%
+  mutate(weight_kg = weight / 1000)
+surveys %>%
+  mutate(weight_kg = weight / 1000,
+         weight_lb = weight_kg * 2.2)
+surveys %>%
+  mutate(weight_kg = weight / 1000) %>%
+  head()
+surveys %>%
+  filter(!is.na(weight)) %>%
+  mutate(weight_kg = weight / 1000) %>%
+  head()
+```
+```{r, results = "hide"}
+surveys_hindfoot_cm <- surveys %>%
+    filter(!is.na(hindfoot_length)) %>%
+    mutate(hindfoot_cm = hindfoot_length / 10) %>%
+    filter(hindfoot_cm < 3) %>%
+    select(species_id, hindfoot_cm)
+str(surveys_hindfoot_cm)
+```
+```{r}
+surveys %>%
+  group_by(sex) %>%
+  summarize(mean_weight = mean(weight, na.rm = TRUE))
+surveys %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight, na.rm = TRUE)) %>% 
+  tail()
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight)) %>%
+  print(n = 15)
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight),
+            min_weight = min(weight))
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight),
+            min_weight = min(weight)) %>%
+  arrange(min_weight)
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight),
+            min_weight = min(weight)) %>%
+  arrange(desc(mean_weight))
+```
+```{r}
+surveys %>%
+    count(sex)
+surveys %>%
+    count(sex, sort = TRUE)
+surveys %>%
+  count(sex, species)
+surveys %>%
+  count(sex, species) %>%
+  arrange(species, desc(n))
+```
+```{r}
+surveys %>%
+  count(plot_type)
+surveys %>%
+    filter(!is.na(hindfoot_length)) %>%
+    group_by(species_id) %>%
+    summarize(
+        mean_hindfoot_length = mean(hindfoot_length),
+        min_hindfoot_length = min(hindfoot_length),
+        max_hindfoot_length = max(hindfoot_length),
+        n = n()
+    )
+surveys %>%
+    filter(!is.na(weight)) %>%
+    group_by(year) %>%
+    filter(weight == max(weight)) %>%
+    select(year, genus, species, weight) %>%
+    arrange(year)
+```
+```{r}
+surveys_gw <- surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(plot_id, genus) %>%
+  summarize(mean_weight = mean(weight))
+str(surveys_gw)
+surveys_spread <- surveys_gw %>%
+  spread(key = genus, value = mean_weight)
+str(surveys_spread)
+surveys_gw %>%
+  spread(genus, mean_weight, fill = 0) %>%
+  head()
+surveys_gather <- surveys_spread %>%
+  gather(key = "genus", value = "mean_weight", -plot_id)
+str(surveys_gather)
+surveys_spread %>%
+  gather(key = "genus", value = "mean_weight", Baiomys:Spermophilus) %>%
+  head()
+```
+```{r}
+surveys_spread_genera <- surveys %>%
+  group_by(plot_id, year) %>%
+  summarize(n_genera = n_distinct(genus)) %>%
+  spread(year, n_genera)
+head(surveys_spread_genera)
+surveys_spread_genera %>%
+  gather("year", "n_genera", -plot_id)
+surveys_long <- surveys %>%
+  gather("measurement", "value", hindfoot_length, weight)
+surveys_long %>%
+  group_by(year, measurement, plot_type) %>%
+  summarize(mean_value = mean(value, na.rm=TRUE)) %>%
+  spread(measurement, mean_value)
+```
+```{r}
+surveys_complete <- surveys %>%
+  filter(!is.na(weight), !is.na(hindfoot_length), !is.na(sex))
+species_counts <- surveys_complete %>%
+    count(species_id) %>% 
+    filter(n >= 50)
+surveys_complete <- surveys_complete %>%
+  filter(species_id %in% species_counts$species_id)
+dim(surveys_complete)
+write_csv(surveys_complete, path = "data/surveys_complete.csv")
+```
+
+
+
