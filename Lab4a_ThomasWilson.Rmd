@@ -1,0 +1,47 @@
+---
+title: "Lab4a"
+author: "Thomas Wilson"
+date: "9/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+surveys_complete <- read_csv("data/surveys_complete.csv")
+ggplot(data = surveys_complete)
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) + geom_point()
+library(hexbin)
+surveys_plot <- ggplot(data = surveys_complete, 
+                       mapping = aes(x = weight, y = hindfoot_length))
+surveys_plot +
+ geom_hex()
+```
+```{r}
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
+    geom_point(alpha = 0.1, color = "blue")
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) +
+    geom_point(alpha = 0.1, aes(color = species_id))
+```
+```{r}
+ggplot(data = surveys_complete, 
+       mapping = aes(x = species_id, y = weight)) +
+   geom_point(aes(color = plot_type))
+```
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_boxplot()
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_boxplot(alpha = 0) +
+    geom_jitter(alpha = 0.3, color = "tomato")
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_violin()
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
+    geom_boxplot(alpha = 0, aes(color = plot_id)) +
+    geom_jitter(alpha = 0.3)
+
+```
+
