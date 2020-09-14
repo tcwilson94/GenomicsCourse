@@ -88,11 +88,11 @@ top10d_3_13 <- report_03_13_2020 %>%
   arrange(desc(min_deaths)) %>%
   slice(1:10)
 
-ggplot(data = top10d_3_13, aes( x = Deaths)) +
-  geom_bar()
-ggplot(data = top10d_3_13, aes( x = Confirmed)) +
-  geom_bar()
-
+ggplot(data = top10d_3_13, aes( x = Deaths, y = Province_State)) +
+  geom_bar(stat = "identity")
+ggplot(data = top10d_3_13, aes( x = Confirmed, y = Province_State)) +
+  geom_bar(stat = "identity")
+  
 top10d_9_13 <- report_09_13_2020 %>%
   filter(Country_Region == "US") %>%
   group_by(Province_State) %>%
@@ -100,10 +100,10 @@ top10d_9_13 <- report_09_13_2020 %>%
   arrange(desc(min_deaths)) %>%
   slice(1:10)
 
-ggplot(data = top10d_9_13, aes( x = Deaths)) +
-  geom_bar()
-ggplot(data = top10d_9_13, aes( x = Confirmed)) +
-  geom_bar()
+ggplot(data = top10d_9_13, aes( x = Deaths, y = Province_State)) +
+  geom_bar(stat = "identity")
+ggplot(data = top10d_9_13, aes( x = Confirmed, y = Province_State)) +
+  geom_bar(stat = "identity")
 
 
   
