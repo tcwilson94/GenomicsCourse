@@ -1,0 +1,187 @@
+---
+title: "Lab5"
+author: "Thomas Wilson"
+date: "9/21/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+Confirmed_State_6_13 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/06-13-2020.csv")) %>%
+  filter (Country_Region == "US") %>% 
+  group_by(Province_State, Country_Region) %>% 
+  summarise(Confirmed = sum(Confirmed))
+
+Confirmed_State_9_13 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-13-2020.csv")) %>% 
+  filter (Country_Region == "US") %>% 
+  group_by(Province_State, Country_Region) %>% 
+  summarise(Confirmed = sum(Confirmed))
+```
+```{r}
+setdiff(Confirmed_State_9_13$Province_State, Confirmed_State_6_13$Province_State)
+Confirmed_State_6_13_9_13_joined <- full_join(Confirmed_State_6_13,
+      Confirmed_State_9_13, by = c("Province_State")) %>% 
+      rename(Confirmed_6_13_2020 = "Confirmed.x", Confirmed_9_13_2020 = "Confirmed.y") %>% 
+      select(-Country_Region.x, -Country_Region.y) %>% 
+      replace_na(list(Confirmed_6_13_2020 = 0))
+
+Confirmed_State_6_13_9_13_joined_long <- Confirmed_State_6_13_9_13_joined %>%
+  pivot_longer(-c(Province_State), names_to = "Date", values_to = "Confirmed")
+head(Confirmed_State_6_13_9_13_joined_long)
+```
+```{r, fig.height= 10, fig.width= 6}
+ggplot(Confirmed_State_6_13_9_13_joined_long, aes(x = Confirmed, y = Province_State)) +
+  geom_boxplot() +
+  labs(title = "Change in Confirmed Covid19 Cases(US)",
+         x = "Number of Confirmed Cases",
+         y = "States")
+```
+```{r}
+library(lubridate)
+time_series_confirmed <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+head(time_series_confirmed)
+time_series_confirmed_long <- time_series_confirmed %>%
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long), names_to = "Date", values_to = "Confirmed")
+head(time_series_confirmed_long)
+download.file(url="https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv", 
+               destfile = "data/time_series_covid19_deaths_global.csv")
+time_series_deaths <- read_csv("data/time_series_covid19_deaths_global.csv")%>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+time_series_deaths_long <- time_series_deaths %>%
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long), names_to = "Date", values_to = "Deaths")
+head(time_series_deaths_long)
+time_series_confirmed_long <- time_series_confirmed_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".", remove = FALSE)
+head(time_series_confirmed_long)
+time_series_deaths_long <- time_series_deaths_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".") %>% 
+  select(Key, Deaths)
+time_series_long_joined <- full_join(time_series_confirmed_long,
+              time_series_deaths_long, by = c("Key")) %>% 
+              select(-Key)
+head(time_series_long_joined)
+time_series_long_joined$Date <- mdy(time_series_long_joined$Date)
+head(time_series_long_joined)
+time_series_long_joined_counts <- time_series_long_joined %>% 
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long, Date),
+               names_to = "Report_Type", values_to = "Counts")
+head(time_series_long_joined_counts)
+time_series_long_joined %>% 
+  group_by(Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+    ggplot(aes(x = Date,  y = Deaths)) + 
+    geom_point() +
+    geom_line() +
+    ggtitle("Worlwide COVID-19 Deaths")
+```
+```{r}
+time_series_deaths_long <- time_series_deaths %>%
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long), names_to = "Date", values_to = "Deaths")
+head(time_series_deaths_long)
+time_series_confirmed_long <- time_series_confirmed_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".", remove = FALSE)
+head(time_series_confirmed_long)
+time_series_deaths_long <- time_series_deaths_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".") %>% 
+  select(Key, Deaths)
+time_series_long_joined <- full_join(time_series_confirmed_long,
+              time_series_deaths_long, by = c("Key")) %>% 
+              select(-Key)
+head(time_series_long_joined)
+time_series_long_joined$Date <- mdy(time_series_long_joined$Date)
+head(time_series_long_joined)
+time_series_long_joined2 <- time_series_long_joined
+time_series_long_joined2 %>%
+  mutate(Deaths_per_Confirmed = Deaths / Confirmed)
+time_series_long_joined_counts2 <- time_series_long_joined2 %>% 
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long, Date),
+               names_to = "Report_Type", values_to = "Counts")
+time_series_long_joined %>% 
+  group_by(Country_Region,Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  filter (Country_Region == "US") %>%
+  mutate(Deaths_per_Confirmed = Deaths / Confirmed) %>%
+    ggplot(aes(x = Date,  y = Deaths_per_Confirmed)) + 
+    geom_point() +
+    geom_line() +
+    ggtitle("US COVID-19 Deaths/Confirmed")
+```
+```{r}
+time_series_long_joined %>%
+group_by(Country_Region) %>%
+  summarise(Deaths_total = sum(Deaths)) %>%
+  arrange(desc(Deaths_total)) %>%
+  slice(seq(1,10,1))
+time_series_long_joined %>% 
+    group_by(Country_Region,Date) %>% 
+    summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+    filter (Country_Region %in% c("Brazil","France","Italy", 
+                                "United Kingdom", "US", "Mexico", "Spain", "India", "Iran", "Peru")) %>% 
+    ggplot(aes(x = Date,  y = Deaths, color = Country_Region)) + 
+    geom_point() +
+    geom_line() +
+    labs(title = "Top 10 Countries with Highest Covid Deaths",
+        x = "Country",
+        y = "Total Deaths") +
+  theme(axis.text.x = element_text(colour = "grey20", size = 12, angle = 90, hjust = 0.5, vjust = 0.5),
+                        axis.text.y = element_text(colour = "grey20", size = 12),
+                        strip.text = element_text(face = "italic"),
+                        text = element_text(size = 16))
+
+
+  
+  
+```
+```{r, fig.height= 10}
+time_series_long_joined %>% 
+    group_by(Country_Region,Date) %>% 
+    summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+    filter (Country_Region %in% c("Brazil","France","Italy", 
+                                "United Kingdom", "US", "Mexico", "Spain", "India", "Iran", "Peru")) %>% 
+    ggplot(aes(x = Date,  y = Deaths, color = Country_Region)) + 
+    geom_point() +
+    geom_line() +
+    labs(title = "Top 10 Countries with Highest Covid Deaths",
+        x = "Country",
+        y = "Total Deaths") +
+  facet_wrap(facets = vars(Country_Region))
+ 
+```
+```{r, fig.height= 10}
+time_series_confirmed_US <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"))
+time_series_confirmed_US_long <- time_series_confirmed_US %>% 
+               pivot_longer(-c(Province_State, Country_Region, Lat, Long_, UID, iso2, iso3, code3, FIPS, Admin2, Combined_Key),
+                            names_to = "Date", values_to = "Confirmed") 
+library(lubridate)
+time_series_confirmed_US_long$Date <- mdy(time_series_confirmed_US_long$Date)
+head(time_series_confirmed_US_long)
+time_series_confirmed_US_long %>%
+  group_by(Province_State, Date) %>%
+  summarise(Confirmed_total = sum(Confirmed)) %>%
+   ggplot(aes(x = Date,  y = Confirmed_total)) + 
+    geom_point() +
+    geom_line() +
+  facet_wrap(facets = vars(Province_State))
+```
+
+```{r, fig.height= 10}
+time_series_long_joined %>% 
+    group_by(Country_Region,Date) %>% 
+    summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+    filter (Country_Region %in% c("Brazil","France","Italy", 
+                                "United Kingdom", "US", "Mexico", "Spain", "India", "Iran", "Peru")) %>% 
+    ggplot(aes(x = Date,  y = Deaths, color = Country_Region)) + 
+    geom_point() +
+    geom_line() +
+    labs(title = "Top 10 Countries with Highest Covid Deaths",
+        x = "Country",
+        y = "Total Deaths") +
+  facet_wrap(facets = vars(Country_Region)) +
+  theme_classic()
+```
+
