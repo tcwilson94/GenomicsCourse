@@ -10,7 +10,7 @@ bibliography: Covid_References.bib
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(maps)
 library(mapdata)
@@ -19,7 +19,7 @@ library(viridis)
 library(wesanderson)
 ```
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 daily_report <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
   rename(Long = "Long_") 
     
@@ -49,7 +49,7 @@ ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed/1000)) +
     theme(legend.position = "right") +
     coord_fixed(ratio=1.5)
 ```
-```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 mybreaks <- c(1, 100, 1000, 10000, 10000)
 ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed)) +
     borders("state", colour = "white", fill = "grey90") +
@@ -72,7 +72,7 @@ ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed)) +
     ) +
     coord_fixed(ratio=1.5)
 ```
-```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 daily_report <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
   rename(Long = "Long_") %>% 
   filter(Country_Region == "US") %>% 
@@ -90,7 +90,7 @@ ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) +
                          trans = "log10") +
   labs(title = "COVID-19 Confirmed Cases in the US (4-02-2020)")
 ```
-```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(RColorBrewer)
 report_04_02_2020 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
   rename(Long = "Long_") %>% 
@@ -113,7 +113,7 @@ ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) +
   ggtitle("Number of Confirmed Cases by US County (4-02-2020)") +
   theme_bw() 
 ```
-```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
   rename(Long = "Long_") %>% 
   filter(Province_State == "Massachusetts") %>% 
@@ -149,7 +149,7 @@ ggplotly(
   theme(axis.text = element_blank())
 )
 ```
-```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 daily_report_9_26_World <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-26-2020.csv")) %>% 
   rename(Long = "Long_")
     
@@ -163,7 +163,7 @@ ggplot(daily_report_9_26_World, aes(x = Long, y = Lat, size = Confirmed/10000)) 
     coord_fixed(ratio=1.5)
 
 ```
-```{r, fig.width=10, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, fig.width=10, echo=FALSE, warning=FALSE, message=FALSE}
 daily_report_9_26_US <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-26-2020.csv")) %>% 
   rename(Long = "Long_") %>% 
   filter(Country_Region == "US") %>% 
@@ -205,7 +205,7 @@ ggplot(daily_report_9_26_US, aes(x = Long, y = Lat, size = Confirmed)) +
     coord_fixed(ratio=1.5)
 
 ```
-```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(RColorBrewer)
 report_09_26_2020 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-26-2020.csv")) %>% 
   rename(Long = "Long_") %>% 
