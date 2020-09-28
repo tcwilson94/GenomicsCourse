@@ -44,4 +44,114 @@ ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_lengt
     geom_jitter(alpha = 0.3)
 
 ```
+```{r}
+library(tidyverse)
+yearly_counts <- surveys_complete %>%
+  count(year, genus)
+ggplot(data = yearly_counts, aes(x = year, y = n)) +
+  geom_line()
+ggplot(data = yearly_counts, aes(x = year, y = n, group = genus)) +
+  geom_line()
+ggplot(data = yearly_counts, aes(x = year, y = n, color = genus)) +
+  geom_line()
+yearly_counts %>%
+  ggplot(mapping = aes(x =year, y = n, color = genus)) +
+  geom_line()
+yearly_counts_graph <- surveys_complete %>%
+  count(year, genus) %>%
+  ggplot(mapping = aes(x =year, y = n, color = genus)) +
+  geom_line()
+
+yearly_counts_graph
+```
+```{r}
+ggplot(data = yearly_counts, aes(x = year, y = n)) +
+    geom_line() +
+    facet_wrap(facets = vars(genus))
+yearly_sex_counts <- surveys_complete %>%
+  count(year, genus, sex)
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_wrap(facets =  vars(genus))
+ggplot(data = yearly_sex_counts, 
+       mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_grid(rows = vars(sex), cols =  vars(genus))
+ggplot(data = yearly_sex_counts, 
+       mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_grid(rows = vars(genus))
+ggplot(data = yearly_sex_counts, 
+       mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_grid(cols = vars(genus))
+```
+```{r}
+ggplot(data = yearly_sex_counts, 
+        mapping = aes(x = year, y = n, color = sex)) +
+     geom_line() +
+     facet_wrap(vars(genus)) +
+     theme_bw()
+yearly_weight <- surveys_complete %>%
+                group_by(year, species_id) %>%
+                 summarize(avg_weight = mean(weight))
+ggplot(data = yearly_weight, mapping = aes(x=year, y=avg_weight)) +
+   geom_line() +
+   facet_wrap(vars(species_id)) +
+   theme_bw()
+```
+```{r}
+ggplot(data = yearly_sex_counts, aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+         x = "Year of observation",
+         y = "Number of individuals") +
+    theme_bw()
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(text=element_text(size = 16))
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(axis.text.x = element_text(colour = "grey20", size = 12, angle = 90, hjust = 0.5, vjust = 0.5),
+                        axis.text.y = element_text(colour = "grey20", size = 12),
+                        strip.text = element_text(face = "italic"),
+                        text = element_text(size = 16))
+grey_theme <- theme(axis.text.x = element_text(colour="grey20", size = 12, 
+                                               angle = 90, hjust = 0.5, 
+                                               vjust = 0.5),
+                    axis.text.y = element_text(colour = "grey20", size = 12),
+                    text=element_text(size = 16))
+
+ggplot(surveys_complete, aes(x = species_id, y = hindfoot_length)) +
+    geom_boxplot() +
+    grey_theme
+```
+```{r}
+cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+    geom_line() +
+  scale_fill_discrete(name="Sex of Individual",
+                         breaks=c("M", "F"),
+                         labels=c("Male", "Female")) +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(axis.text.x = element_text(colour = "grey20", size = 12, angle = 90, hjust = 0.5, vjust = 0.5),
+                        axis.text.y = element_text(colour = "grey20", size = 12),
+                        strip.text = element_text(face = "bold", "italic"),
+                        text = element_text(size = 16))
+```
 
