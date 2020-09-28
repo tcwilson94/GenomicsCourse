@@ -163,7 +163,7 @@ ggplot(daily_report_9_26_World, aes(x = Long, y = Lat, size = Confirmed/10000)) 
     coord_fixed(ratio=1.5)
 
 ```
-```{r, fig.width=10, echo=FALSE, warning=FALSE, message=FALSE}
+```{r,echo=FALSE, warning=FALSE, message=FALSE}
 daily_report_9_26_US <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-26-2020.csv")) %>% 
   rename(Long = "Long_") %>% 
   filter(Country_Region == "US") %>% 
@@ -186,7 +186,7 @@ mybreaks_9_26 <- c(100, 1000, 10000, 100000, 100000)
 ggplot(daily_report_9_26_US, aes(x = Long, y = Lat, size = Confirmed)) +
     borders("state", colour = "white", fill = "grey90") +
     geom_point(aes(x=Long, y=Lat, size=Confirmed, color=Confirmed),stroke=F, alpha=0.7) +
-    scale_size_continuous(name="Cases", trans="log", range=c(1,7), 
+    scale_size_continuous(name="Cases", range=c(1,7), 
                         breaks=mybreaks, labels = c("100-999",
                         "1000-9,999", "10,000-99,999", "100,000-149,999", "100,000+")) +
     scale_color_viridis_c(option="viridis",name="Cases",
