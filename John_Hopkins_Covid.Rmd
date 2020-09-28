@@ -1,0 +1,14 @@
+---
+title: "JohnHopkins_Reference"
+author: "Thomas Wilson"
+date: "9/28/2020"
+output: html_document
+bibliography: Covid_References.bib
+
+---
+Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
+
+#REFERENCES
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
