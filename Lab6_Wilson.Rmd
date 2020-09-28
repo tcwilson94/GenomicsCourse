@@ -1,5 +1,5 @@
 ---
-title: "Lab6_Report"
+title: "Lab6"
 author: "Thomas Wilson"
 date: "9/28/2020"
 output: html_document
