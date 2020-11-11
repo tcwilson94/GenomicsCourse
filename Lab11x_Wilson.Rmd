@@ -1,0 +1,274 @@
+---
+title: "Lab11x"
+author: "Thomas Wilson"
+date: "11/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+## ---loading necessary packages and data---
+library("phyloseq"); packageVersion("phyloseq")
+data(GlobalPatterns)
+library("ggplot2"); packageVersion("ggplot2")
+library("plyr"); packageVersion("plyr")
+theme_set(theme_bw())
+
+```
+```{r}
+## ---ORDINATION PLOTS---
+## ---Remove OTUs that do not show appear more than 5 times in more than half the samples---
+GP = GlobalPatterns
+wh0 = genefilter_sample(GP, filterfun_sample(function(x) x > 5), A=0.5*nsamples(GP))
+GP1 = prune_taxa(wh0, GP)
+## ---Transform to even sampling depth---
+GP1 = transform_sample_counts(GP1, function(x) 1E6 * x/sum(x))
+## ---Keep only the most abundant five phyla---
+phylum.sum = tapply(taxa_sums(GP1), tax_table(GP1)[, "Phylum"], sum, na.rm=TRUE)
+top5phyla = names(sort(phylum.sum, TRUE))[1:5]
+GP1 = prune_taxa((tax_table(GP1)[, "Phylum"] %in% top5phyla), GP1)
+## ---Define a human-associated versus non-human categorical variable---
+human = get_variable(GP1, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+sample_data(GP1)$human <- factor(human)
+
+
+```
+
+```{r}
+## ---Just OTUs, shading points by Phylum---
+GP.ord <- ordinate(GP1, "NMDS", "bray")
+p1 = plot_ordination(GP1, GP.ord, type="taxa", color="Phylum", title="taxa")
+print(p1)
+
+## ---high number of points is getting in the way of our visual understanding of the data---
+p1 + facet_wrap(~Phylum, 3)
+
+## ---Just samples, shade the points by “SampleType”, shape according to "human-associated"---
+p2 = plot_ordination(GP1, GP.ord, type="samples", color="SampleType", shape="human") 
+p2 + geom_polygon(aes(fill=SampleType)) + geom_point(size=5) + ggtitle("samples")
+
+## ---Biplot graphic (samples and OTUs in one plot)---
+p3 = plot_ordination(GP1, GP.ord, type="biplot", color="SampleType", shape="Phylum", title="biplot")
+# Some stuff to modify the automatic shape scale
+GP1.shape.names = get_taxa_unique(GP1, "Phylum")
+GP1.shape <- 15:(15 + length(GP1.shape.names) - 1)
+names(GP1.shape) <- GP1.shape.names
+GP1.shape["samples"] <- 16
+p3 + scale_shape_manual(values=GP1.shape)
+
+## ---Split graphic (samples/OTUs are separated on two side-by-side panel)---
+p4 = plot_ordination(GP1, GP.ord, type="split", color="Phylum", shape="human", label="SampleType", title="split") 
+p4
+
+## ---The following function reproduces ggplot2’s default color scale---
+gg_color_hue <- function(n){
+    hues = seq(15, 375, length=n+1)
+    hcl(h=hues, l=65, c=100)[1:n]
+}
+color.names <- levels(p4$data$Phylum)
+p4cols <- gg_color_hue(length(color.names))
+names(p4cols) <- color.names
+p4cols["samples"] <- "black"
+p4 + scale_color_manual(values=p4cols)
+
+```
+```{r}
+## ---different method parameter options to the plot_ordination function, store the plot results in a list, and then plot these results in a combined graphic using ggplot2---
+dist = "bray"
+ord_meths = c("DCA", "CCA", "RDA", "DPCoA", "NMDS", "MDS", "PCoA")
+plist = llply(as.list(ord_meths), function(i, physeq, dist){
+        ordi = ordinate(physeq, method=i, distance=dist)
+        plot_ordination(physeq, ordi, "samples", color="SampleType")
+}, GP1, dist)
+names(plist) <- ord_meths
+
+## ---The previous code chunk performed each ordination method, created the corresponding graphic based on the first two axes of each ordination result, and then stored each ggplot2 plot object in a different named element of the list named plist. The following chunk will extract the data from each of those individual plots, and put it back together in one big data.frame suitable for including all plots in one graphic---
+pdataframe = ldply(plist, function(x){
+    df = x$data[, 1:2]
+    colnames(df) = c("Axis_1", "Axis_2")
+    return(cbind(df, x$data))
+})
+names(pdataframe)[1] = "method"
+
+## ---make standard faceted ggplot scatter---
+p = ggplot(pdataframe, aes(Axis_1, Axis_2, color=SampleType, shape=human, fill=SampleType))
+p = p + geom_point(size=4) + geom_polygon()
+p = p + facet_wrap(~method, scales="free")
+p = p + scale_fill_brewer(type="qual", palette="Set1")
+p = p + scale_colour_brewer(type="qual", palette="Set1")
+p
+
+## ---If you want to replot a larger version of an individual plot, you can do by printing from the original plist from which pdataframe was made. Each element of plist is already a ggplot2 graphic. For example, we can replot the detrended correspondence analysis (DCA) by printing the second element of the list---
+plist[[2]] 
+
+## ---Extra layers to make pretty---
+p = plist[[2]] + scale_colour_brewer(type="qual", palette="Set1")
+p = p + scale_fill_brewer(type="qual", palette="Set1")
+p = p + geom_point(size=5) + geom_polygon(aes(fill=SampleType))
+p
+
+```
+```{r}
+## ---Use the ordinate function to simultaneously perform weightd UniFrac and then perform a Principal Coordinate Analysis on that distance matrix (first line). Next pass that data and the ordination results to plot_ordination to create the ggplot2 output graphic with default ggplot2 settings---
+ordu = ordinate(GP1, "PCoA", "unifrac", weighted=TRUE)
+plot_ordination(GP1, ordu, color="SampleType", shape="human")
+
+## ---Make graphic prettier---
+p = plot_ordination(GP1, ordu, color="SampleType", shape="human")
+p = p + geom_point(size=7, alpha=0.75)
+p = p + scale_colour_brewer(type="qual", palette="Set1")
+p + ggtitle("MDS/PCoA on weighted-UniFrac distance, GlobalPatterns")
+
+
+```
+```{r}
+## ALPHA DIVERSITY GRAPHICS---
+## ---Examples using the plot_richness function (wrapper for all descriptions of alpha diversity)---
+
+## ---Load packages and datasets---
+library("phyloseq"); packageVersion("phyloseq")
+data("GlobalPatterns")
+library("ggplot2"); packageVersion("ggplot2")
+theme_set(theme_bw())
+pal = "Set1"
+scale_colour_discrete <-  function(palname=pal, ...){
+  scale_colour_brewer(palette=palname, ...)
+}
+scale_fill_discrete <-  function(palname=pal, ...){
+  scale_fill_brewer(palette=palname, ...)
+}
+```
+```{r}
+## ---Prepare data,  not a bad idea to prune OTUs that are not present in any of the samples---
+GP <- prune_species(speciesSums(GlobalPatterns) > 0, GlobalPatterns)
+
+# ---Plot examples---
+plot_richness(GP)
+
+## ---Note that in this case, the Fisher calculation results in a warning (but still plots). We can avoid this by specifying a measures argument to plot_richness, which will include just the alpha-diversity measures that we want---
+plot_richness(GP, measures=c("Chao1", "Shannon"))
+ 
+## ---Specify a sample varibale to organize samples on x axis---
+plot_richness(GP, x="SampleType", measures=c("Chao1", "Shannon"))
+
+## ---use an external variable in the plot that isn’t in the dataset---
+sampleData(GP)$human <- getVariable(GP, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
+
+## ---Map the new variable on the horizontal axis and shade according to sampletype---
+plot_richness(GP, x="human", color="SampleType", measures=c("Chao1", "Shannon"))
+
+## ---Merge samples (from the environment)---
+GPst = merge_samples(GP, "SampleType")
+## repair variables that were damaged during merge (coerced to numeric)
+sample_data(GPst)$SampleType <- factor(sample_names(GPst))
+sample_data(GPst)$human <- as.logical(sample_data(GPst)$human)
+
+## ---Plot merged version of date (First store the default ggplot graphic as p, then add an additional geom_point layer with a large size and slight transparency)---
+p = plot_richness(GPst, x="human", color="SampleType", measures=c("Chao1", "Shannon"))
+p + geom_point(size=5, alpha=0.7)
+
+## ---The good news is that layers can be removed from a ggplot object with standard list notation (using the dollar sign $)---
+## ---First check list---
+p$layers
+
+## ---We can see that the first layer is the one specifying the original points, which are small. We can use negative indexing to “pop” it out, then add a new geom_point layer with larger point size (the following two lines)---
+p$layers <- p$layers[-1]
+p + geom_point(size=5, alpha=0.7)
+```
+```{r}
+## ---HEATMAP PLOTS---
+## ---Load packages and Data---
+library("phyloseq"); packageVersion("phyloseq")
+library("ggplot2"); packageVersion("ggplot2")
+theme_set(theme_bw())
+
+## ---Plot a 300-taxa dataset (No prior preprocessing)---
+data("GlobalPatterns")
+gpt <- subset_taxa(GlobalPatterns, Kingdom=="Bacteria")
+gpt <- prune_taxa(names(sort(taxa_sums(gpt),TRUE)[1:300]), gpt)
+plot_heatmap(gpt, sample.label="SampleType")
+
+## ---Subset a smaller dataset (easily represented in one plot)---
+gpac <- subset_taxa(GlobalPatterns, Phylum=="Crenarchaeota")
+
+## ---Default plot_heatmap settings---
+plot_heatmap(gpac)
+
+## ---Relabel by sample variable and taxonomic family---
+(p <- plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family"))
+
+## ---Re-label axis titles---
+p$scales$scales[[1]]$name <- "My X-Axis"
+p$scales$scales[[2]]$name <- "My Y-Axis"
+print(p)
+
+## ---Change color---
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#CCFF66")
+## ---dark-blue to red scheme---
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#FF3300")
+## ---dark-blue to very light-blue scheme---
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#000033", high="#66CCFF")
+## ---dark on light color scheme. Note that we change the background value (the value of the NA and 0 elements)---
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#66CCFF", high="#000033", na.value="white")
+## ---similar color scheme as the previous, but the “near zero” color is closer to a cream color, and the colors themselves are closer to blue-grey---
+plot_heatmap(gpac, "NMDS", "bray", "SampleType", "Family", low="#FFFFCC", high="#000033", na.value="white")
+
+## ---Using different ecological distances/ordinations---
+## ---NMDS ordination on the jaccard distance---
+plot_heatmap(gpac, "NMDS", "jaccard")
+## ---Detrended correspondence analysis---
+plot_heatmap(gpac, "DCA", "none", "SampleType", "Family")
+## ---Unconstrained redundancy analysis (Principle Components Analysis, PCA)---
+plot_heatmap(gpac, "RDA", "none", "SampleType", "Family")
+## ---PCoA/MDS ordination on the (default) bray-curtis distance---
+plot_heatmap(gpac, "PCoA", "bray", "SampleType", "Family")
+## ---MDS/PCoA ordination on the Unweighted-UniFrac distance---
+plot_heatmap(gpac, "PCoA", "unifrac", "SampleType", "Family")
+## ---weighted-UniFrac distance and MDS/PCoA ordination---
+plot_heatmap(gpac, "MDS", "unifrac", "SampleType", "Family", weighted=TRUE)
+
+
+## ---Here is how you might create a heatmap using base-R graphics and the more common (but problematic) hierarchical clustering organization, in case you want to compare with plot_heatmap, for example---
+heatmap(otu_table(gpac))
+
+
+
+
+```
+```{r}
+## ---PLOT MICROBIOME NETWORK---
+## ---load packages and data---
+library(phyloseq); packageVersion("phyloseq")
+packageVersion("ggplot2")
+data(enterotype)
+## ---There is a random aspect to some of the network layout methods. For complete reproducibility of the images produced later in this tutorial, it is possible to set the random number generator seed explicitly---
+set.seed(711L)
+## ---Remove samples with no assigned enterotype designation---
+enterotype = subset_samples(enterotype, !is.na(Enterotype))
+
+## ---Plotting---
+## ---Default settings---
+plot_net(enterotype, maxdist = 0.4, point_label = "Sample_ID")
+## ---map some of the sample variables onto this graphic as color and shape---
+plot_net(enterotype, maxdist = 0.3, color = "SeqTech", shape="Enterotype")
+## ---when maxdist value is decreased (hint: this will usually decrease the number of edges in the network)---
+
+## ---Create an igraph-based network based on the default distance method, “Jaccard”, and a maximum distance between connected nodes of 0.3---
+ig <- make_network(enterotype, max.dist=0.3)
+## ---default ig settings---
+plot_network(ig, enterotype)
+## ---map some of the sample variables onto this graphic as color and shape---
+plot_network(ig, enterotype, color="SeqTech", shape="Enterotype", line_weight=0.4, label=NULL)
+## ---Let’s see what happens when the maximum distance is lowered, decreasing the number of edges in the network---
+ig <- make_network(enterotype, max.dist=0.2)
+plot_network(ig, enterotype, color="SeqTech", shape="Enterotype", line_weight=0.4, label=NULL)
+
+## ---Bray-Curtis Distance Method---
+ig <- make_network(enterotype, dist.fun="bray", max.dist=0.3)
+plot_network(ig, enterotype, color="SeqTech", shape="Enterotype", line_weight=0.4, label=NULL)
+
+```
+
