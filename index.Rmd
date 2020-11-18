@@ -17,20 +17,39 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ![](data/46518623_10215953073532340_6933172260605788160_o.jpg)
 [Lab1](lab1_ThomasWilson.html)
+
 [Lab2](Lab2.html)
+
 [Lab3A](lab3A_ThomasWilson.html)
+
 [Lab3B](Lab3B_ThomasWilson.html)
+
 [Lab4](Lab4_ThomasWilson.html)
+
 [Lab4a](Lab4_ThomasWilson.html)
+
 [Lab5](Lab5_Wilson.html)
+
 [DataVisualization](Lab5DataVisual_Wilson.html)
+
 [Lab5Extra](Lab5Extra_Wilson.html)
+
 [Lab6](Lab6_ThomasWilson.html)
+
 [Lab7](Lab7_Wislon.html)
+
 [Lab9](Lab9.html)
+
 [Lab9A](Lab9A_Wilson.html)
+
 [Lab10](Lab10_Wilson.html)
+
 [Lab11](Lab11_Wilson.html)
+
 [Lab11x](Lab11x_Wilson.html)
+
+[Lab12](Lab12_Wilson.html)
+
+[Lab12Extra (Contains the code for graphs)](lab12extra.html)
 
 

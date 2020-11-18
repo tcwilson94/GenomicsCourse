@@ -1,0 +1,19 @@
+---
+title: "Lab12"
+author: "Thomas Wilson"
+date: "11/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+![Basic Data Visualization](data/galFiltered network with data(1).png)
+
+![Differentially Expressed Genes](data/String Network - ovarian cancer - 1.png)
+
+![RCy3 Graph 1](data/my first network.png)
+![RCy3 Graph 2](data/vignette_image.png)
+
+
+
