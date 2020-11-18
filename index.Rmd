@@ -1,16 +1,21 @@
 ---
 title: "Evolutionary Genomics & Bioinformatics"
 author: "Thomas Wilson"
-date: "08/31/2020"
-output: html_document
+output: 
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+
 ---
 
+This is a rendering of lab files for Evolutionary Genomics and Bioinformatics taught by Dr. Jeffrey Blanchard (UMass Amherst)
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r}
 ```
 
+![](data/46518623_10215953073532340_6933172260605788160_o.jpg)
 [Lab1](lab1_ThomasWilson.html)
 [Lab2](Lab2.html)
 [Lab3A](lab3A_ThomasWilson.html)
