@@ -1,0 +1,169 @@
+---
+title: "Lab8"
+author: "Thomas Wilson"
+date: "11/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## --- Doing a phylogenetic analysis involves (1) assembling a group of sequences to evaluate, (2) aligning the sequences so that a distance can be calculate between the sequences, (3) determining the relationships among the sequences, and (4) visualizing the relationships ---
+
+## ---- Scroll down and under Phylogenetic Analysis select “One Click”. Upload or paste in your DNA sequences from the file in Moodle. Then click submit. This will start the analysis process. The numbers of the tree represent statistical support for the relationship. The more robust the relationship the closer the value will be to 1. The scale at the bottom represents sequence distance ---
+
+![NGPhylogeny.fr Analysis](data/Tree_image.png)
+
+
+
+
+
+
+
+
+
+
+```{r}
+BiocManager::install("ggtree")
+BiocManager::install("treeio")
+BiocManager::install("ggimage")
+```
+```{r}
+library(tidyverse)
+library(ggtree)
+# added treeio and ggimage library
+library(treeio)
+library(ggimage)
+# need to install libmagick 
+```
+```{r}
+## ---Importing tree data---
+library(tidyverse)
+library(ggtree)
+tree <- read.tree("data/tree_newick.nwk")
+tree
+# build a ggplot with a geom_tree
+ggplot(tree) + geom_tree() + theme_tree()
+# This is convenient shorthand
+ggtree(tree)
+# add a scale
+ggtree(tree) + geom_treescale()
+# or add the entire scale to the x axis with theme_tree2()
+ggtree(tree) + theme_tree2()
+ggtree(tree, branch.length="none")
+ggtree(tree, branch.length="none", color="blue", size=2, linetype=3)
+```
+```{r}
+## ---Exercise 1---
+
+## ---Create a slanted phylogenetic tree. Create a circular phylogenetic tree.Create a circular unscaled cladogram with thick red lines ---
+  
+ggtree(tree, layout="slanted")
+ggtree(tree, layout="circular")
+ggtree(tree, branch.length="none", color="red", size=3)
+```
+```{r}
+# create the basic plot
+p <- ggtree(tree)
+# add node points
+p + geom_nodepoint()
+# add tip points
+p + geom_tippoint()
+# Label the tips
+p + geom_tiplab()
+```
+```{r}
+## ---Exercise 2---
+ggtree(tree) +
+  geom_tiplab(color="purple") + geom_tippoint(shape="diamond", color="purple") + geom_nodepoint(color="yellow", alpha=5) + ggtitle("Excerise 2")
+
+```
+
+```{r}
+ggtree(tree) + geom_text(aes(label=node), hjust=-.3)
+ggtree(tree) + geom_tiplab()
+
+## ---MRCA = Most recent common ancestor---
+MRCA(tree, c("C", "E"))
+MRCA(tree, c("C", "E"))
+ggtree(tree) + 
+  geom_cladelabel(node=17, label="Some random clade", color="red")
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_cladelabel(node=17, label="Some random clade", 
+                  color="red2", offset=.8)
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_cladelabel(node=17, label="Some random clade", 
+                  color="red2", offset=.8) + 
+  geom_cladelabel(node=21, label="A different clade", 
+                  color="blue", offset=.8)
+```
+```{r}
+## ---First, the labels would look better if they were aligned. That’s simple. Pass align=TRUE to geom_cladelabel() (see ?geom_cladelabel help for more). But now, the labels are falling off the edge of the plot. That’s because geom_cladelabel() is just adding it this layer onto the end of the existing canvas that was originally layed out in the ggtree call---
+
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_cladelabel(node=17, label="Some random clade", 
+                  color="red2", offset=.8, align=TRUE) + 
+  geom_cladelabel(node=21, label="A different clade", 
+                  color="blue", offset=.8, align=TRUE) + 
+  theme_tree2() + 
+  xlim(0, 70) + 
+  theme_tree()
+
+## ---highlights entire clades---
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_hilight(node=17, fill="gold") + 
+  geom_hilight(node=21, fill="purple")
+
+## ---Connecting taxa---
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_taxalink("E", "H", color="blue3") +
+  geom_taxalink("C", "G", color="orange2", curvature=-.9)
+```
+```{r}
+## --- Exercise 3---
+MRCA(tree, c("B", "C"))
+MRCA(tree, c("L", "J"))
+
+ggtree(tree) + 
+  geom_tiplab() + 
+  geom_hilight(node=19, fill="blue") + 
+  geom_hilight(node=23, fill="red") + geom_cladelabel(node=17, label="Superclade 17", 
+                  color="purple", offset=.8, align=TRUE) +
+  theme_tree2() +
+  ggtitle("Exercise 3") +
+  geom_taxalink("C", "E", color="gray", linetype=2) +
+  geom_taxalink("G", "J", color="gray", linetype=2)
+  
+```
+```{r}
+## ---BONUS---
+## ---get phylopic--- 
+
+newick <- "((Pongo_abelii,(Gorilla_gorilla_gorilla,(Pan_paniscus,Pan_troglodytes)Pan,Homo_sapiens)Homininae)Hominidae,Nomascus_leucogenys)Hominoidea;"
+
+tree <- read.tree(text=newick)
+
+d <- ggimage::phylopic_uid(tree$tip.label)
+d$body_mass = c(52, 114, 47, 45, 58, 6)
+
+p <- ggtree(tree) %<+% d + 
+  geom_tiplab(aes(image=uid, colour=body_mass), geom="phylopic", offset=2.5) +
+  geom_tiplab(aes(label=label), offset = .2) + xlim(NA, 7) +
+  scale_color_viridis_c()
+p  
+```
+```{r}
+tree <- read.tree("data/lab8_fastree_result.tre")
+ggtree(tree) +
+  xlim(0,2) +
+  geom_nodelab() +
+  geom_tiplab()
+  
+```
+

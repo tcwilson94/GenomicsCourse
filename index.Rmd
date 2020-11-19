@@ -38,6 +38,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Lab7](Lab7_Wislon.html)
 
+[Lab8](Lab8_Wilson.html)
+
 [Lab9](Lab9.html)
 
 [Lab9A](Lab9A_Wilson.html)
