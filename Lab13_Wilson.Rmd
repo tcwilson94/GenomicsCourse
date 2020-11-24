@@ -1,0 +1,23 @@
+---
+title: "Lab13"
+author: "Thomas Wilson"
+date: "11/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Instructions on How to Spruce up your Rmd and GitHub Page ##
+Creating Pretty Documents from R Markdown]
+Way back in Lab 2 there was a link to Creating Pretty Documents from R Markdown
+
+First install the prettydoc package
+
+Then in the 'yaml block at the top of your Rmd file
+
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github

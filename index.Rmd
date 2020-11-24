@@ -54,4 +54,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Lab12Extra (Contains the code for graphs)](lab12extra.html)
 
+[Lab13](Lab13_Wilson.html)
+
 
